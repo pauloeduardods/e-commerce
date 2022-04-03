@@ -29,9 +29,7 @@ func main() {
 		render.JSON(w, r, map[string]string{"message": "GO e-commerce API REST"})
 	})
 
-	// r.Route("/products")
-
-	// r.Route("/products", func
+	r.Route("/products", ProductsRoute)
 
 	http.ListenAndServe(port, r)
 }

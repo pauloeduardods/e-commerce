@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// Create a new connection to database
 func connection() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "root:paulopaulo@tcp(localhost:3306)/Go_Ecommerce")
 	if err != nil {
@@ -18,8 +19,3 @@ func connection() (*sql.DB, error) {
 	db.SetMaxIdleConns(10)
 	return db, nil
 }
-
-// func execSomeQuery() {
-// 	res := conn().Exec("SELECT * FROM users")
-// 	fmt.Println(res)
-// }

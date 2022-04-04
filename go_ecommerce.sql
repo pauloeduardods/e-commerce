@@ -3,8 +3,7 @@ CREATE SCHEMA Go_Ecommerce;
 CREATE TABLE Go_Ecommerce.Users (
   id INTEGER AUTO_INCREMENT PRIMARY KEY NOT NULL,
   username TEXT NOT NULL,
-  classe TEXT NOT NULL,
-  level INTEGER NOT NULL,
+  email TEXT NOT NULL,
   password TEXT NOT NULL
 );
 CREATE TABLE Go_Ecommerce.Orders (
@@ -23,3 +22,5 @@ INSERT INTO Go_Ecommerce.Products (name, quantity, price) VALUES ('Product 1', '
 INSERT INTO Go_Ecommerce.Products (name, quantity, price) VALUES ('Product 2', '20', '20.00');
 INSERT INTO Go_Ecommerce.Products (name, quantity, price) VALUES ('Product 3', '30', '30.00');
 INSERT INTO Go_Ecommerce.Products (name, quantity, price) VALUES ('Product 4', '40', '40.00');
+
+INSERT INTO Go_Ecommerce.Users (username, email, password) VALUES ('user1', 'teste@email.com', 'password');

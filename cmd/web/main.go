@@ -1,18 +1,24 @@
 package main
 
 import (
+	"crypto/rand"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
+	"github.com/pauloeduardods/e-commerce/pkg/config"
 )
 
+var AppConfig config.AppConfig
+
 func main() {
-	// fmt.Println(models.GetAllProducts())
-	// fmt.Println(models.InsertProducts(models.Product{Name: "testeeeeee", Quantity: 1, Price: 1.0}))
-	// fmt.Println(models.GetAllProducts())
-	// fmt.Println(models.GetProduct(2))
+	randBytes := make([]byte, 64)
+	_, err := rand.Read(randBytes)
+	if err != nil {
+		panic(err)
+	}
+	AppConfig.HmacSecret = randBytes
 
 	const port = ":3001"
 
@@ -30,6 +36,7 @@ func main() {
 	})
 
 	r.Route("/products", ProductsRoute)
+	r.Route("/login", LoginRoute)
 
 	http.ListenAndServe(port, r)
 }

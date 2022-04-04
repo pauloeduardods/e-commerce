@@ -9,3 +9,7 @@ func ProductsRoute(r chi.Router) {
 	r.Get("/{id}", GetProductController)
 	r.With(ProductValidation).Post("/", CreateProductController)
 }
+
+func LoginRoute(r chi.Router) {
+	r.With(LoginValidation).Post("/", LoginController)
+}

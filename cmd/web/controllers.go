@@ -35,3 +35,16 @@ func CreateProductController(w http.ResponseWriter, r *http.Request) {
 	render.Status(r, serviceResponse.Status)
 	render.JSON(w, r, serviceResponse.Payload)
 }
+
+func LoginController(w http.ResponseWriter, r *http.Request) {
+	u := r.Context().Value(schemas.User{})
+	if u == nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, map[string]string{"message": "Invalid request"})
+		return
+	}
+	user := u.(schemas.User)
+	serviceResponse := services.Login(user.Email, user.Password, AppConfig.HmacSecret)
+	render.Status(r, serviceResponse.Status)
+	render.JSON(w, r, serviceResponse.Payload)
+}

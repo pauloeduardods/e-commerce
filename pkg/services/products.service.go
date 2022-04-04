@@ -9,20 +9,12 @@ import (
 )
 
 func GetAllProducts() ServiceResponse {
-	products, err := models.GetAllProducts()
-	if err != nil {
-		return ServiceResponse{
-			Status: http.StatusInternalServerError,
-			Payload: map[string]interface{}{
-				"message": "Error getting all products",
-				"error":   err.Error(),
-			},
-		}
-	}
+	products := make(chan []schemas.Product)
+	go models.GetAllProducts(products)
 	return ServiceResponse{
 		Status: http.StatusOK,
 		Payload: map[string]interface{}{
-			"products": products,
+			"products": <-products,
 		},
 	}
 }
@@ -38,7 +30,8 @@ func GetProduct(id string) ServiceResponse {
 			},
 		}
 	}
-	product, err := models.GetProduct(productID)
+	product := make(chan schemas.Product)
+	go models.GetProduct(productID, product)
 	if err != nil {
 		emptyPayload := map[string]interface{}{}
 		return ServiceResponse{
@@ -49,34 +42,25 @@ func GetProduct(id string) ServiceResponse {
 	return ServiceResponse{
 		Status: http.StatusOK,
 		Payload: map[string]interface{}{
-			"product": product,
+			"product": <-product,
 		},
 	}
 }
 
 func CreateProduct(product schemas.Product) ServiceResponse {
-	validation := product.Validate()
-	if validation.Error {
+	productID := make(chan int64)
+	go models.InsertProducts(product, productID)
+	id := <-productID
+	if id == 0 {
 		return ServiceResponse{
-			Status: validation.Status,
+			Status: http.StatusInternalServerError,
 			Payload: map[string]interface{}{
-				"message": validation.Message,
+				"message": "Error creating product",
 			},
 		}
 	}
-	productID, err := models.InsertProducts(product)
-	if err != nil {
-		errPayload := map[string]interface{}{
-			"message": "Error creating product",
-			"error":   err.Error(),
-		}
-		return ServiceResponse{
-			Status:  http.StatusInternalServerError,
-			Payload: errPayload,
-		}
-	}
 	result := schemas.Product{
-		ID:       productID,
+		ID:       id,
 		Name:     product.Name,
 		Quantity: product.Quantity,
 		Price:    product.Price,

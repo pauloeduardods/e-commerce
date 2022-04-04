@@ -2,43 +2,42 @@ package models
 
 import "github.com/pauloeduardods/e-commerce/pkg/schemas"
 
-func GetUserByEmail(email string) (schemas.User, error) {
+func GetUserByEmail(email string, user chan schemas.User) {
 	db, err := connection()
 	if err != nil {
-		return schemas.User{}, err
+		return
 	}
 
 	defer db.Close()
 
 	row := db.QueryRow("SELECT * FROM users WHERE email = ?", email)
-	var user schemas.User
-	err = row.Scan(&user.ID, &user.Username, &user.Email, &user.Password)
+	var curUser schemas.User
+	err = row.Scan(&curUser.ID, &curUser.Username, &curUser.Email, &curUser.Password)
 	if err != nil {
-		return schemas.User{}, err
+		return
 	}
-
-	return user, nil
+	user <- curUser
 }
 
-func CreateUser(user schemas.User) (int64, error) {
+func CreateUser(user schemas.User, id chan int64) {
 	db, err := connection()
 	if err != nil {
-		return 0, err
+		return
 	}
 
 	defer db.Close()
 
 	stmt, err := db.Prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)")
 	if err != nil {
-		return 0, err
+		return
 	}
 	res, err := stmt.Exec(user.Username, user.Email, user.Password)
 	if err != nil {
-		return 0, err
+		return
 	}
-	id, err := res.LastInsertId()
+	insertedId, err := res.LastInsertId()
 	if err != nil {
-		return 0, err
+		return
 	}
-	return id, nil
+	id <- insertedId
 }

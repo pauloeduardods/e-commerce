@@ -6,11 +6,14 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pauloeduardods/e-commerce/pkg/models"
+	"github.com/pauloeduardods/e-commerce/pkg/schemas"
 )
 
 func Login(email, password string, HmacSecret []byte) ServiceResponse {
-	user, err := models.GetUserByEmail(email)
-	if err != nil || user.Password != password {
+	userChan := make(chan schemas.User)
+	models.GetUserByEmail(email, userChan)
+	user := <-userChan
+	if user.Password != password {
 		return ServiceResponse{
 			Status: http.StatusUnauthorized,
 			Payload: map[string]interface{}{

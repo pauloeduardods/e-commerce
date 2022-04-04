@@ -9,13 +9,14 @@ import (
 func GetAllProducts(products chan []schemas.Product) {
 	db, err := connection()
 	if err != nil {
+		products <- []schemas.Product{}
 		return
 	}
-
 	defer db.Close()
 
 	rows, err := db.Query("SELECT * FROM products")
 	if err != nil {
+		products <- []schemas.Product{}
 		return
 	}
 	var productsSplice []schemas.Product
@@ -23,18 +24,24 @@ func GetAllProducts(products chan []schemas.Product) {
 		var product schemas.Product
 		err = rows.Scan(&product.ID, &product.Name, &product.Quantity, &product.Price)
 		if err != nil {
+			products <- []schemas.Product{}
 			return
 		}
 		productsSplice = append(productsSplice, product)
+	}
+	if productsSplice == nil {
+		products <- []schemas.Product{}
+		return
 	}
 	products <- productsSplice
 }
 
 // Insert a new product into database
-func InsertProducts(product schemas.Product, id chan int64) {
+func InsertProduct(product schemas.Product, id chan int64) {
 	db, err := connection()
 	if err != nil {
 		id <- 0
+		return
 	}
 
 	defer db.Close()
@@ -42,14 +49,17 @@ func InsertProducts(product schemas.Product, id chan int64) {
 	stmt, err := db.Prepare("INSERT INTO products (name, quantity, price) VALUES (?, ?, ?)")
 	if err != nil {
 		id <- 0
+		return
 	}
 	res, err := stmt.Exec(product.Name, product.Quantity, product.Price)
 	if err != nil {
 		id <- 0
+		return
 	}
 	insertedId, err := res.LastInsertId()
 	if err != nil {
 		id <- 0
+		return
 	}
 	id <- insertedId
 }
@@ -58,6 +68,7 @@ func InsertProducts(product schemas.Product, id chan int64) {
 func GetProduct(id int, product chan schemas.Product) {
 	db, err := connection()
 	if err != nil {
+		product <- schemas.Product{}
 		return
 	}
 
@@ -65,9 +76,9 @@ func GetProduct(id int, product chan schemas.Product) {
 
 	row := db.QueryRow("SELECT * FROM products WHERE id = ?", id)
 	var curProduct schemas.Product
-
 	err = row.Scan(&curProduct.ID, &curProduct.Name, &curProduct.Quantity, &curProduct.Price)
-	if err != nil {
+	if curProduct == (schemas.Product{}) || err != nil {
+		product <- schemas.Product{}
 		return
 	}
 	product <- curProduct

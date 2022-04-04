@@ -13,7 +13,7 @@ import (
 var AppConfig config.AppConfig
 
 func main() {
-	randBytes := make([]byte, 64)
+	randBytes := make([]byte, 256)
 	_, err := rand.Read(randBytes)
 	if err != nil {
 		panic(err)

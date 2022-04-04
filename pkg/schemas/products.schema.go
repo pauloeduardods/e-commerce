@@ -1,8 +1,6 @@
 package schemas
 
-import (
-	"net/http"
-)
+import "net/http"
 
 type Product struct {
 	ID       int64   `json:"id,omitempty"`

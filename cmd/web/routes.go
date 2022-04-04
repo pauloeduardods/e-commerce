@@ -7,4 +7,5 @@ import (
 func ProductsRoute(r chi.Router) {
 	r.Get("/", GetAllProductsController)
 	r.Get("/{id}", GetProductController)
+	r.With(ProductValidation).Post("/", CreateProductController)
 }

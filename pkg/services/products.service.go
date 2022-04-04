@@ -5,13 +5,10 @@ import (
 	"strconv"
 
 	"github.com/pauloeduardods/e-commerce/pkg/models"
+	"github.com/pauloeduardods/e-commerce/pkg/schemas"
 )
 
 func GetAllProducts() ServiceResponse {
-	// fmt.Println(models.GetAllProducts())
-	// fmt.Println(models.InsertProducts(models.Product{Name: "testeeeeee", Quantity: 1, Price: 1.0}))
-	// fmt.Println(models.GetAllProducts())
-	// fmt.Println(models.GetProduct(2))
 	products, err := models.GetAllProducts()
 	if err != nil {
 		errPayload := map[string]interface{}{
@@ -20,7 +17,7 @@ func GetAllProducts() ServiceResponse {
 		}
 		return ServiceResponse{Status: http.StatusInternalServerError, Payload: errPayload}
 	}
-	return ServiceResponse{Status: http.StatusOK, Payload: products}
+	return ServiceResponse{Status: http.StatusOK, Payload: map[string]interface{}{"products": products}}
 }
 
 func GetProduct(id string) ServiceResponse {
@@ -37,5 +34,22 @@ func GetProduct(id string) ServiceResponse {
 		emptyPayload := map[string]interface{}{}
 		return ServiceResponse{Status: http.StatusNotFound, Payload: emptyPayload}
 	}
-	return ServiceResponse{Status: http.StatusOK, Payload: product}
+	return ServiceResponse{Status: http.StatusOK, Payload: map[string]interface{}{"product": product}}
+}
+
+func CreateProduct(product schemas.Product) ServiceResponse {
+	validation := product.Validate()
+	if validation.Error {
+		return ServiceResponse{Status: validation.Status, Payload: map[string]interface{}{"message": validation.Message}}
+	}
+	productID, err := models.InsertProducts(product)
+	if err != nil {
+		errPayload := map[string]interface{}{
+			"message": "Error creating product",
+			"error":   err.Error(),
+		}
+		return ServiceResponse{Status: http.StatusInternalServerError, Payload: errPayload}
+	}
+	result := schemas.Product{ID: productID, Name: product.Name, Quantity: product.Quantity, Price: product.Price}
+	return ServiceResponse{Status: http.StatusCreated, Payload: map[string]interface{}{"product": result}}
 }

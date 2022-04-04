@@ -11,16 +11,33 @@ import (
 func Login(email, password string, HmacSecret []byte) ServiceResponse {
 	user, err := models.GetUserByEmail(email)
 	if err != nil || user.Password != password {
-		return ServiceResponse{Status: http.StatusUnauthorized, Payload: map[string]interface{}{"message": "Invalid credentials"}}
+		return ServiceResponse{
+			Status: http.StatusUnauthorized,
+			Payload: map[string]interface{}{
+				"message": "Invalid credentials",
+			},
+		}
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":   user.ID,
-		"time": time.Now().Unix(),
+		"id":       user.ID,
+		"email":    user.Email,
+		"username": user.Username,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 	})
 
 	tokenString, err := token.SignedString(HmacSecret)
 	if err != nil {
-		return ServiceResponse{Status: http.StatusInternalServerError, Payload: map[string]interface{}{"message": "Error generating token"}}
+		return ServiceResponse{
+			Status: http.StatusInternalServerError,
+			Payload: map[string]interface{}{
+				"message": "Error generating token",
+			},
+		}
 	}
-	return ServiceResponse{Status: http.StatusOK, Payload: map[string]interface{}{"token": tokenString}}
+	return ServiceResponse{
+		Status: http.StatusOK,
+		Payload: map[string]interface{}{
+			"token": tokenString,
+		},
+	}
 }

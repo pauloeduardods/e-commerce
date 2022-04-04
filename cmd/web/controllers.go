@@ -27,7 +27,9 @@ func CreateProductController(w http.ResponseWriter, r *http.Request) {
 	p := r.Context().Value(schemas.Product{})
 	if p == nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, map[string]string{"message": "Invalid request"})
+		render.JSON(w, r, map[string]string{
+			"message": "Invalid request",
+		})
 		return
 	}
 	product := p.(schemas.Product)
@@ -40,7 +42,9 @@ func LoginController(w http.ResponseWriter, r *http.Request) {
 	u := r.Context().Value(schemas.User{})
 	if u == nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, map[string]string{"message": "Invalid request"})
+		render.JSON(w, r, map[string]string{
+			"message": "Invalid request",
+		})
 		return
 	}
 	user := u.(schemas.User)

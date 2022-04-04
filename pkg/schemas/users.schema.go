@@ -19,8 +19,5 @@ func (u User) Validate() SchemaResponse {
 	if u.Email == "" {
 		return SchemaResponse{Error: true, Message: "\"email\" is required", Status: http.StatusBadRequest}
 	}
-	// if len(u.Email) < 6 {
-	// 	return SchemaResponse{Error: true, Message: "\"email\" must have at least 6 characters", Status: http.StatusBadRequest}
-	// }
 	return SchemaResponse{Error: false, Message: "", Status: 0}
 }

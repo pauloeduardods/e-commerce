@@ -3,26 +3,45 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/render"
 	"github.com/pauloeduardods/e-commerce/pkg/schemas"
 )
 
+////////////////////////////////////////////////////////////////////////////////////////////
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("Authorization")
-		if token == "" {
+		tokenString := r.Header.Get("Authorization")
+		if tokenString == "" {
 			render.Status(r, http.StatusUnauthorized)
 			render.JSON(w, r, map[string]string{
 				"message": "Unauthorized",
 			})
 			return
 		}
-		ctx := context.WithValue(r.Context(), "token", token)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		// ctx := context.WithValue(r.Context(), "token", tokenString)
+		// next.ServeHTTP(w, r.WithContext(ctx))
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+			return AppConfig.HmacSecret, nil
+		})
+		fmt.Println(11)
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			fmt.Println(claims["foo"], claims["nbf"])
+			fmt.Println(claims)
+		} else {
+			println(12)
+			fmt.Println(err)
+		}
 	})
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////
 
 func ProductValidation(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
